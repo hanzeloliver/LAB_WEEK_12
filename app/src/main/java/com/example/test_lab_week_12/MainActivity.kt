@@ -4,8 +4,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -30,17 +34,30 @@ class MainActivity : AppCompatActivity() {
             }
         )[MovieViewModel::class.java]
 
-        movieViewModel.popularMovies.observe(this) { list ->
-            val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
-            movieAdapter.addMovies(
-                list.filter { it.releaseDate?.startsWith(currentYear) == true }
-                    .sortedByDescending { it.popularity }
-            )
-        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
 
-        movieViewModel.error.observe(this) { error ->
-            if (error.isNotEmpty()) {
-                Snackbar.make(recyclerView, error, Snackbar.LENGTH_LONG).show()
+                // FLOW — collect movies
+                launch {
+                    movieViewModel.popularMovies.collect { movies ->
+                        val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
+
+                        movieAdapter.addMovies(
+                            movies.filter { it.releaseDate?.startsWith(currentYear) == true }
+                                .sortedByDescending { it.popularity }
+                        )
+                    }
+                }
+
+                // FLOW — collect error
+                launch {
+                    movieViewModel.error.collect { errorMessage ->
+                        if (errorMessage.isNotEmpty()) {
+                            Snackbar.make(recyclerView, errorMessage, Snackbar.LENGTH_LONG).show()
+                        }
+                    }
+                }
+
             }
         }
     }
