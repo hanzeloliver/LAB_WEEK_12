@@ -1,29 +1,27 @@
-package com.example.movielist.repository
+package com.example.test_lab_week_12.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.movielist.api.MovieService
-import com.example.movielist.model.Movie
-import com.example.movielist.model.PopularMoviesResponse
+import com.example.test_lab_week_12.api.MovieService
+import com.example.test_lab_week_12.model.Movie
+import com.example.test_lab_week_12.model.PopularMoviesResponse
 
 class MovieRepository(private val movieService: MovieService) {
 
-    private val apiKey = "08e2b9471025fcb7f36e026788df6889"
+    public val apiKey = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwOGUyYjk0NzEwMjVmY2I3ZjM2ZTAyNjc4OGRmNjg4OSIsIm5iZiI6MTc0OTMxNDEzMS4yMjMsInN1YiI6IjY4NDQ2YTUzM2IyZjY4MTVmOWRlNjg0YyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.D3FVueFjYFRJMzS94TEO3-XdymgN-LBMYyVAMwTac_0"
 
     private val movieLiveData = MutableLiveData<List<Movie>>()
-    val movies: LiveData<List<Movie>>
-        get() = movieLiveData
+    val movies: LiveData<List<Movie>> get() = movieLiveData
 
     private val errorLiveData = MutableLiveData<String>()
-    val error: LiveData<String>
-        get() = errorLiveData
+    val error: LiveData<String> get() = errorLiveData
 
     suspend fun fetchMovies() {
         try {
-            val popularMovies = movieService.getPopularMovies(apiKey)
-            movieLiveData.postValue(popularMovies.results)
+            val response = movieService.getPopularMovies(apiKey)
+            movieLiveData.postValue(response.results)
         } catch (e: Exception) {
-            errorLiveData.postValue("An error occurred: ${e.message}")
+            errorLiveData.postValue("Error: ${e.message}")
         }
     }
 }

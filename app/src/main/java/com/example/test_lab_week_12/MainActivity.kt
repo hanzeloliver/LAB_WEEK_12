@@ -30,14 +30,10 @@ class MainActivity : AppCompatActivity() {
             }
         )[MovieViewModel::class.java]
 
-        movieViewModel.popularMovies.observe(this) { popularMovies ->
+        movieViewModel.popularMovies.observe(this) { list ->
             val currentYear = Calendar.getInstance().get(Calendar.YEAR).toString()
-
             movieAdapter.addMovies(
-                popularMovies
-                    .filter { movie ->
-                        movie.releaseDate?.startsWith(currentYear) == true
-                    }
+                list.filter { it.releaseDate?.startsWith(currentYear) == true }
                     .sortedByDescending { it.popularity }
             )
         }
